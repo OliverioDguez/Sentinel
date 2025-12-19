@@ -32,6 +32,7 @@ const eightBallCommand = require("./commands/8ball.js");
 const pokedexCommand = require("./commands/pokedex.js");
 const coinCommand = require("./commands/coin.js");
 const clearCommand = require("./commands/clear.js");
+const serverInfo = require("./commands/serverInfo.js");
 
 // --- EVENT: CLIENT READY ---
 client.once(Events.ClientReady, (c) => {
@@ -85,41 +86,7 @@ client.on(Events.MessageCreate, async (message) => {
       clearCommand.execute(message, args);
       break;
     case "serverinfo":
-    case "server":
-      const guild = message.guild;
-      const owner = await guild.fetchOwner();
-
-      const serverEmbed = new EmbedBuilder()
-        .setColor("Random")
-        .setTitle("Server Information")
-        .setThumbnail(guild.iconURL({ dynamic: true }))
-        .addFields(
-          { name: "Server Name", value: `${guild.name}`, inline: true },
-          { name: "Server ID", value: `${guild.id}`, inline: true },
-          { name: "Server Owner", value: `${owner.user.tag}`, inline: true },
-
-          {
-            name: "Server Member Count",
-            value: `${guild.memberCount}`,
-            inline: true,
-          },
-
-          {
-            name: "Server Created At",
-            value: `${guild.createdAt.toLocaleString()}`,
-            inline: true,
-          },
-          { name: "Locale", value: `${guild.preferredLocale}`, inline: true },
-
-          { name: "Roles", value: `${guild.roles.cache.size}`, inline: true }
-        )
-        .setImage(guild.bannerURL({ size: 1024 }))
-        .setFooter({
-          text: `Sentinel • Requested by ${message.author.username}`,
-        })
-        .setTimestamp();
-
-      message.reply({ embeds: [serverEmbed] });
+      serverInfo.execute(message, args);
       break;
     default:
       // Empty default to avoid spamming "Invalid command"
