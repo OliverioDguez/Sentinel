@@ -26,6 +26,7 @@ const client = new Client({
 
 // Modules
 const pingCommand = require("./commands/ping.js");
+const nameCommand = require("./commands/name.js");
 
 // --- EVENT: CLIENT READY ---
 client.once(Events.ClientReady, (c) => {
@@ -55,7 +56,7 @@ client.on(Events.MessageCreate, async (message) => {
       break;
 
     case "name":
-      message.reply("Sentinel");
+      nameCommand.execute(message, args);
       break;
 
     case "avatar":
