@@ -69,31 +69,6 @@ client.on(Events.MessageCreate, async (message) => {
       eightBallCommand.execute(message, args);
       break;
 
-    case "gif": {
-      if (args.length === 0) {
-        message.reply("Please provide a search term");
-        break;
-      }
-      const query = args.join(" ");
-      try {
-        const response = await fetch(
-          `https://api.giphy.com/v1/gifs/search?api_key=${process.env.GIPHY_API_KEY}&q=${query}&limit=10&rating=g`
-        );
-        const data = await response.json();
-
-        if (data.data.length === 0) {
-          message.reply("No results found");
-          break;
-        }
-        const randomIndex = Math.floor(Math.random() * data.data.length);
-        message.reply(data.data[randomIndex].url);
-      } catch (error) {
-        console.error(error);
-        message.reply("An error occurred");
-      }
-      break;
-    }
-
     case "pokedex": {
       if (args.length === 0) {
         message.reply("Please provide a Pokemon name");
