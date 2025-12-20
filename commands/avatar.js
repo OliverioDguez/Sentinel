@@ -1,6 +1,7 @@
+const { EmbedBuilder } = require("discord.js");
 module.exports = {
   name: "avatar",
-  description: "Replies with the bot's avatar",
+  description: "Displays your avatar or the avatar of a mentioned user",
   execute(message, args) {
     const targetUser = message.mentions.users.first() || message.author;
     const avatarUrl = targetUser.displayAvatarURL({
