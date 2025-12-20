@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   // 1. Definition
@@ -27,14 +31,14 @@ module.exports = {
 
       // Ephemeral response (only visible to the user) keeps the chat clean
       await interaction.reply({
-        content: `🧹 Successfully deleted **${amount}** messages.`,
-        ephemeral: true,
+        content: `Successfully deleted **${amount}** messages.`,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error(error);
       await interaction.reply({
         content: "There was an error trying to prune messages in this channel.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },
