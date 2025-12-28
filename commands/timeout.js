@@ -1,72 +1,85 @@
-const { PermissionsBitField } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 
 module.exports = {
-  name: "timeout",
-  description: "Timeout a user",
-  async execute(message, args) {
-    // 1. Permission check (Check the EXECUTOR, not the victim)
-    if (
-      !message.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)
-    ) {
-      return message.reply("You don't have permission to timeout members.");
+  // 1. DEFINITION
+  data: new SlashCommandBuilder()
+    .setName("timeout")
+    .setDescription("Timeout a user for a specific duration")
+    // Target User
+    .addUserOption((option) =>
+      option
+        .setName("target")
+        .setDescription("The user to timeout")
+        .setRequired(true)
+    )
+    // Duration (Minutes)
+    .addIntegerOption(
+      (option) =>
+        option
+          .setName("minutes")
+          .setDescription("Duration in minutes (1 - 40320)")
+          .setRequired(true)
+          .setMinValue(1)
+          .setMaxValue(40320) // Discord API limit is 28 days
+    )
+    // Reason (Optional)
+    .addStringOption((option) =>
+      option.setName("reason").setDescription("Reason for the timeout")
+    )
+    // Permission Lock (User needs ModerateMembers to see this)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDMPermission(false),
+
+  // 2. EXECUTION
+  async execute(interaction) {
+    const targetMember = interaction.options.getMember("target");
+    const minutes = interaction.options.getInteger("minutes");
+    const reason =
+      interaction.options.getString("reason") || "Timeout by Sentinel Command";
+
+    // --- Safety Checks ---
+
+    // 1. Check if user is in guild
+    if (!targetMember) {
+      return interaction.reply({
+        content: "That user is not currently in this server.",
+        ephemeral: true,
+      });
     }
 
-    // 2. Validate arguments: Get the member
-    const member = message.mentions.members.first();
-    if (!member) {
-      return message.reply(
-        "Please mention a user to timeout. Example: `!timeout @User 5`"
-      );
+    // 2. Self-Harm Check
+    if (targetMember.id === interaction.user.id) {
+      return interaction.reply({
+        content: "You cannot timeout yourself 😅",
+        ephemeral: true,
+      });
     }
 
-    // 3. Safety checks
-    if (member.id === message.author.id) {
-      return message.reply("You cannot timeout yourself 😅");
-    }
-    if (member.id === message.guild.ownerId) {
-      return message.reply("You cannot timeout the server owner 👑");
-    }
-
-    // Hierarchy check (Can the bot moderate this user?)
-    if (!member.moderatable) {
-      return message.reply(
-        "❌ I cannot timeout this user. They might have a higher role than me."
-      );
+    // 3. Hierarchy Check (Bot vs Target)
+    if (!targetMember.moderatable) {
+      return interaction.reply({
+        content:
+          "❌ I cannot timeout this user. They might have a higher role than me or be the owner.",
+        ephemeral: true,
+      });
     }
 
-    // 4. Parse Duration
-    // We try to find the number in the arguments.
-    // We filter out the mention (which starts with <@) to find the time argument.
-    const timeArg = args.find(
-      (arg) => !arg.startsWith("<@") && !isNaN(parseInt(arg))
-    );
-    const minutes = timeArg ? parseInt(timeArg) : 1; // Default to 1 minute if no number found
-
-    if (minutes < 1 || minutes > 40320) {
-      return message.reply(
-        "Please provide a valid duration between 1 and 40320 minutes."
-      );
-    }
-
-    // 5. Execution
+    // --- Execution ---
     try {
+      // Convert minutes to milliseconds
       const durationMs = minutes * 60 * 1000;
-      // Optional: Join arguments that are NOT the time or the mention for the reason
-      // This is a simple way to get the rest of the text as reason
-      const reasonParts = args.filter(
-        (arg) => !arg.startsWith("<@") && arg !== timeArg
-      );
-      const reason = reasonParts.join(" ") || "Timeout by Sentinel Command";
 
-      await member.timeout(durationMs, reason);
-      message.channel.send(
-        `**${member.user.tag}** has been timed out for **${minutes}** minute(s).`
+      await targetMember.timeout(durationMs, reason);
+
+      await interaction.reply(
+        `✅ **${targetMember.user.tag}** has been timed out for **${minutes}** minute(s).\nReason: *${reason}*`
       );
     } catch (error) {
       console.error(error);
-      message.reply(
-        "An error occurred while trying to timeout the user. Check my permissions hierarchy!"
-      );
+      await interaction.reply({
+        content: "An error occurred while trying to timeout the user.",
+        ephemeral: true,
+      });
     }
   },
 };
