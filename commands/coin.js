@@ -1,9 +1,14 @@
+const { SlashCommandBuilder } = require("discord.js");
+
 module.exports = {
-  name: "coin",
-  description: "Flips a coin",
-  execute(message, args) {
+  data: new SlashCommandBuilder()
+    .setName("coin")
+    .setDescription("Flips a coin"),
+
+  async execute(interaction) {
     const sides = ["Heads", "Tails"];
     const winningSide = sides[Math.floor(Math.random() * sides.length)];
-    message.reply(`The coin landed on ${winningSide}`);
+
+    await interaction.reply(`The coin landed on ${winningSide}`);
   },
 };

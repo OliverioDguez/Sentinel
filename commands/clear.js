@@ -17,8 +17,6 @@ module.exports = {
         .setMaxValue(100)
         .setRequired(true)
     )
-    // Only allow users with "Manage Messages" permission to see/use this command
-    // PermissionFlagsBits is the standard for Slash Commands
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
   // 2. Execution
@@ -26,10 +24,8 @@ module.exports = {
     const amount = interaction.options.getInteger("amount");
 
     try {
-      // bulkDelete(amount, filterOld) - true filters messages older than 14 days
       await interaction.channel.bulkDelete(amount, true);
 
-      // Ephemeral response (only visible to the user) keeps the chat clean
       await interaction.reply({
         content: `Successfully deleted **${amount}** messages.`,
         flags: MessageFlags.Ephemeral,

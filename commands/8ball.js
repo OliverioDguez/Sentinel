@@ -31,7 +31,6 @@ module.exports = {
     const index = Math.floor(Math.random() * box.length);
     const answer = box[index];
 
-    // Reply with both question and answer
     await interaction.reply(
       `🎱 **Question:** ${question}\n**Answer:** ${answer}`
     );
